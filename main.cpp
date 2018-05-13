@@ -12,23 +12,32 @@
 
 int main() {
 
-    int k = 15;
+    int k = 25;
 
     int max_path_length = 50;
 
-    int max_spacer_length = 70;
+    int max_spacer_length = 100;
 
     int vertexes_treshold = 2;
 
+    int number_of_threads = 1;
 
-    ifstream ifs("/Users/evgenijkegeles/CLionProjects/CRISPR-cassets-finder/sequence_1");
-    string seq((std::istreambuf_iterator<char>(ifs)),
-               (std::istreambuf_iterator<char>()));
+
+//    ifstream ifs("/Users/evgenijkegeles/CLionProjects/CRISPR-cassets-finder/bacterial.txt");
+//    string seq((std::istreambuf_iterator<char>(ifs)),
+//               (std::istreambuf_iterator<char>()));
 
     unordered_map<string, triple> vertexes;
     unordered_map<string, int> edges;
 
-    std::pair<int, int> size = make_graph(k, seq, vertexes, edges);
+//    std::pair<int, int> size = make_graph(k, seq, vertexes, edges);
+    std::pair<int, int> size = read_from_fastq(
+            "/Users/evgenijkegeles/CLionProjects/CRISPR-cassets-finder/kegeles.fastq", k, vertexes, edges);
+
+
+//  std::pair<int, int> size = read_from_fastq("/Users/evgenijkegeles/CLionProjects/CRISPR-cassets-finder/kegeles.fastq", k, vertexes, edges);
+
+    cout << size.first << " " << size.second << endl;
 
 
     vector<int> max_out_vertexes = find_max_out_vertexes(vertexes, vertexes_treshold);
@@ -62,7 +71,8 @@ int main() {
     cout << endl;
 */
 
-    vector<path> possible_ways = find_possible_pairs(int_edges, weights, offset, max_in_vertexes, max_out_vertexes,
+    vector<path> possible_ways = find_possible_pairs(int_edges, weights, offset, max_in_vertexes,
+                                                     max_out_vertexes,
                                                      max_path_length);
 
 

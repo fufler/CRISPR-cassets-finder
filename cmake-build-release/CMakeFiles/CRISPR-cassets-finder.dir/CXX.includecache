@@ -41,6 +41,10 @@ functional
 -
 set
 -
+pthread.h
+-
+thread
+-
 
 /Users/evgenijkegeles/CLionProjects/CRISPR-cassets-finder/main.cpp
 graph_assembly.h

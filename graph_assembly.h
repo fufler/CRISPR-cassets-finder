@@ -21,6 +21,8 @@
 #include <algorithm>
 #include <functional>
 #include <set>
+#include <pthread.h>
+#include <thread>
 
 using namespace std;
 
@@ -43,11 +45,11 @@ Comparator compFunctor =
 
 
 std::pair<int, int> make_graph(const int k, const string &sequence, unordered_map<string, triple> &vertexes,
-                               unordered_map<string, int> &edges, int N = 0) {
+                               unordered_map<string, int> &edges, int counter_vertexes = 0, int counter_edges = 0) {
 
     string kmer12, kmer1, kmer2;
-    int counter_vertexes = 0;
-    int counter_edges = 0;
+//    int counter_vertexes = 0;
+//    int counter_edges = 0;
     for (int i = 0; i < sequence.length() - k - 1; i++) {
         kmer12 = sequence.substr(i, k + 1);
         transform(kmer12.begin(), kmer12.end(), kmer12.begin(), ::tolower);
@@ -112,7 +114,58 @@ make_int_graph(const unordered_map<string, triple> &vertexes, const unordered_ma
     return result_vertexes;
 }
 
+pair<int, int> read_from_fasta(const string &file_path, int k, unordered_map<string, triple> &vertexes,
+                               unordered_map<string, int> &edges){
+    string s;
+    ifstream in(file_path);
+    string p;
+    pair<int, int> to_return;
+    int vertexes_count = 0;
+    int edges_count = 0;
+    while (getline(in, s)){
+        if (s[0] == '>' || s[0] == '\n'){
+            if (p.length() > k) {
+                pair<int, int> tmp = make_graph(k, p, vertexes, edges, vertexes_count, edges_count);
+                to_return.first += tmp.first;
+                to_return.second += tmp.second;
+                p.clear();
+            }
+            continue;
+        }
+        p+=s;
+    }
+    pair<int, int> tmp = make_graph(k, p, vertexes, edges, vertexes_count, edges_count);
+    to_return.first += tmp.first;
+    to_return.second += tmp.second;
+    in.close();
+    return  to_return;
+}
 
+pair<int, int> read_from_fastq(const string &file_path, int k, unordered_map<string, triple> &vertexes,
+                               unordered_map<string, int> &edges){
+    string s;
+    pair<int, int> to_return;
+    ifstream in(file_path);
+    string p;
+    int vertexes_count = 0;
+    int edges_count = 0;
+    while (getline(in, s)) {
+        if (s[0]=='@') {
+            getline(in,p);
+            if(p[0]!='@' && p.length() > k){
+//                cout << p << endl;
+                pair<int, int> tmp = make_graph(k, p, vertexes, edges, vertexes_count, edges_count);
+                to_return.first += tmp.first;
+                to_return.second += tmp.second;}
+        }
+
+    }
+    in.close();
+//    pair<int, int> tmp = make_graph(k, s, vertexes, edges);
+//    to_return.first += tmp.first;
+//    to_return.second += tmp.second;
+    return  to_return;
+}
 
 //auto comp = [](const triple& a, const triple& b) { return a.third < b.third; };
 //struct myCompare
