@@ -1,0 +1,31 @@
+k-mer length (15)
+Left flanking pretendents (3)
+197 20 19 
+
+Right flanking pretendents (2)
+133 33 
+
+Possible repeats (6)
+Start: 197, Finish: 33, Length: 14, Weight: 159, Path: atcagagctattgccaatctggcccaatt 
+197 20 21 22 23 24 25 26 27 28 29 30 31 32 33 
+
+Start: 197, Finish: 133, Length: 15, Weight: 164, Path: atcagagctattgccaatctggcccaattc 
+197 20 21 22 23 24 25 26 27 28 29 30 31 32 33 133 
+
+Start: 20, Finish: 33, Length: 13, Weight: 156, Path: tcagagctattgccaatctggcccaatt 
+20 21 22 23 24 25 26 27 28 29 30 31 32 33 
+
+Start: 20, Finish: 133, Length: 14, Weight: 161, Path: tcagagctattgccaatctggcccaattc 
+20 21 22 23 24 25 26 27 28 29 30 31 32 33 133 
+
+Start: 19, Finish: 33, Length: 14, Weight: 159, Path: ctcagagctattgccaatctggcccaatt 
+19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 
+
+Start: 19, Finish: 133, Length: 15, Weight: 164, Path: ctcagagctattgccaatctggcccaattc 
+19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 133 
+
+
+
+Possible spacers (0)
+
+
