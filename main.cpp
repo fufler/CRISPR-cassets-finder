@@ -12,16 +12,13 @@
 
 int main() {
 
-    int k = 25;
+    int k = 10;
 
     int max_path_length = 50;
 
-    int max_spacer_length = 100;
+    int max_spacer_length = 130;
 
     int vertexes_treshold = 2;
-
-    int number_of_threads = 1;
-
 
 //    ifstream ifs("/Users/evgenijkegeles/CLionProjects/CRISPR-cassets-finder/bacterial.txt");
 //    string seq((std::istreambuf_iterator<char>(ifs)),
@@ -31,11 +28,12 @@ int main() {
     unordered_map<string, int> edges;
 
 //    std::pair<int, int> size = make_graph(k, seq, vertexes, edges);
-    std::pair<int, int> size = read_from_fastq(
-            "/Users/evgenijkegeles/CLionProjects/CRISPR-cassets-finder/kegeles.fastq", k, vertexes, edges);
+//    std::pair<int, int> size = read_from_fastq("/Users/evgenijkegeles/CLionProjects/CRISPR-cassets-finder/kegeles.fastq", k, vertexes, edges);
 
-
-//  std::pair<int, int> size = read_from_fastq("/Users/evgenijkegeles/CLionProjects/CRISPR-cassets-finder/kegeles.fastq", k, vertexes, edges);
+//    std::pair<int, int> size = read_from_fasta("/home/zhenyakeg/CRISPR_cassets_finder/sequence.fasta",
+//                                               k, vertexes, edges);
+    std::pair<int, int> size = read_from_fasta("/Users/evgenijkegeles/CLionProjects/CRISPR-cassets-finder/for_checking.txt",
+                                               k, vertexes, edges);
 
     cout << size.first << " " << size.second << endl;
 
@@ -51,7 +49,6 @@ int main() {
     vector<int> offset(size.first + 1, 0);
 
     vector<string> int_vertexes = make_int_graph(vertexes, edges, size, int_edges, weights, offset);
-
 
     vertexes.clear();
     edges.clear();
@@ -71,13 +68,15 @@ int main() {
     cout << endl;
 */
 
-    vector<path> possible_ways = find_possible_pairs(int_edges, weights, offset, max_in_vertexes,
-                                                     max_out_vertexes,
-                                                     max_path_length);
+    vector<path> possible_ways = find_possible_pairs_parallel(int_edges, weights, offset, max_in_vertexes,
+                                                              max_out_vertexes,
+                                                              max_path_length);
 
 
-    vector<path> possible_spacers = find_possible_spacers(int_edges, weights, offset, possible_ways, max_spacer_length);
+    vector<path> possible_spacers = find_possible_spacers_parallel(int_edges, weights, offset, possible_ways,
+                                                                   max_spacer_length);
 
+//    vector<path> possible_spacers = {};
 
     make_output(max_in_vertexes, max_out_vertexes, possible_ways, possible_spacers, int_vertexes, k);
 

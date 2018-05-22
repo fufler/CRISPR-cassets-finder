@@ -7,6 +7,14 @@
 #IncludeRegexTransform: 
 
 /Users/evgenijkegeles/CLionProjects/CRISPR-cassets-finder/graph_analysis.h
+pthread.h
+-
+thread
+-
+unistd.h
+-
+fcntl.h
+-
 
 /Users/evgenijkegeles/CLionProjects/CRISPR-cassets-finder/graph_assembly.h
 cassert

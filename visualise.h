@@ -20,7 +20,7 @@
 using namespace std;
 
 void
-graph_visualise(const unordered_map<string, triple> &vertexes, const unordered_map<string, int> &edges) {
+graph_visualise_debug(const unordered_map<string, triple> &vertexes, const unordered_map<string, int> &edges) {
     int k = vertexes.begin()->first.length();
     int fd = open("/Users/evgenijkegeles/CLionProjects/CRISPR-cassets-finder/graph_visualise.txt",
                   O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -35,6 +35,32 @@ graph_visualise(const unordered_map<string, triple> &vertexes, const unordered_m
         sprintf(buf, "%d%s_%d_%d -> %d%s_%d_%d [label=\"%s:%d\" penwidth=%d.0]\n", vertexes.at(vertex1).third,
                 vertex1.c_str(), vertexes.at(vertex1).first,
                 vertexes.at(vertex1).second, vertexes.at(vertex2).third, vertex2.c_str(), vertexes.at(vertex2).first,
+                vertexes.at(vertex2).second,
+                it->first.c_str(), it->second, it->second);
+        write(fd, buf, strlen(buf));
+
+    }
+    sprintf(buf, "}\n");
+    write(fd, buf, strlen(buf));
+    close(fd);
+}
+
+void
+graph_visualise(const unordered_map<string, triple> &vertexes, const unordered_map<string, int> &edges) {
+    int k = vertexes.begin()->first.length();
+    int fd = open("/Users/evgenijkegeles/CLionProjects/CRISPR-cassets-finder/graph_visualise.txt",
+                  O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    int BUF_SIZE = 1000;
+    char buf[BUF_SIZE];
+    sprintf(buf, "digraph {\n node [shape=box]\n");
+    write(fd, buf, strlen(buf));
+
+    for (auto it = edges.begin(); it != edges.end(); ++it) {
+        string vertex1 = it->first.substr(0, k);
+        string vertex2 = it->first.substr(1, k);
+        sprintf(buf, "%s_%d_%d -> %s_%d_%d [label=\"%s:%d\" penwidth=%d.0]\n",
+                vertex1.c_str(), vertexes.at(vertex1).first,
+                vertexes.at(vertex1).second, vertex2.c_str(), vertexes.at(vertex2).first,
                 vertexes.at(vertex2).second,
                 it->first.c_str(), it->second, it->second);
         write(fd, buf, strlen(buf));

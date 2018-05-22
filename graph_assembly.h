@@ -33,6 +33,7 @@ struct triple {
 struct path {
     int start, end, length, weight;
     vector<int> way;
+    set<int> visited;
 };
 
 typedef std::function<bool(pair<string, triple>, pair<string, triple>)> Comparator;
@@ -45,11 +46,9 @@ Comparator compFunctor =
 
 
 std::pair<int, int> make_graph(const int k, const string &sequence, unordered_map<string, triple> &vertexes,
-                               unordered_map<string, int> &edges, int counter_vertexes = 0, int counter_edges = 0) {
+                               unordered_map<string, int> &edges, int &counter_vertexes, int &counter_edges) {
 
     string kmer12, kmer1, kmer2;
-//    int counter_vertexes = 0;
-//    int counter_edges = 0;
     for (int i = 0; i < sequence.length() - k - 1; i++) {
         kmer12 = sequence.substr(i, k + 1);
         transform(kmer12.begin(), kmer12.end(), kmer12.begin(), ::tolower);
@@ -61,16 +60,16 @@ std::pair<int, int> make_graph(const int k, const string &sequence, unordered_ma
             ++edges[kmer12];
         } else {
             ++edges[kmer12];
-            counter_edges++;
+            counter_edges += 1;
             if (vertexes.count(kmer1) == 0) {
                 vertexes[kmer1] = {0, 1, counter_vertexes};
-                counter_vertexes++;
+                counter_vertexes += 1;
             } else {
                 vertexes.at(kmer1).second += 1;
             }
             if (vertexes.count(kmer2) == 0) {
                 vertexes[kmer2] = {1, 0, counter_vertexes};
-                counter_vertexes++;
+                counter_vertexes += 1;
             } else {
                 vertexes.at(kmer2).first += 1;
             }
@@ -90,22 +89,27 @@ make_int_graph(const unordered_map<string, triple> &vertexes, const unordered_ma
     auto it = ordered_vertexes.begin();
     for (int i = 0; i < size.first; i++) {
         offset[i + 1] = offset[i] + it->second.second;
+
         for (int j = 0; j < it->second.second; j++) {
             if (edges.count(it->first + "a") > 0) {
                 int_edges[offset[i] + j] = vertexes.at(it->first.substr(1, it->first.length() - 1) + "a").third;
                 weights[offset[i] + j] = edges.at(it->first + "a");
+                j++;
             }
             if (edges.count(it->first + "t") > 0) {
                 int_edges[offset[i] + j] = vertexes.at(it->first.substr(1, it->first.length() - 1) + "t").third;
                 weights[offset[i] + j] = edges.at(it->first + "t");
+                j++;
             }
             if (edges.count(it->first + "g") > 0) {
                 int_edges[offset[i] + j] = vertexes.at(it->first.substr(1, it->first.length() - 1) + "g").third;
                 weights[offset[i] + j] = edges.at(it->first + "g");
+                j++;
             }
             if (edges.count(it->first + "c") > 0) {
                 int_edges[offset[i] + j] = vertexes.at(it->first.substr(1, it->first.length() - 1) + "c").third;
                 weights[offset[i] + j] = edges.at(it->first + "c");
+                j++;
             }
         }
         result_vertexes.push_back(it->first);
@@ -144,19 +148,17 @@ pair<int, int> read_from_fasta(const string &file_path, int k, unordered_map<str
 pair<int, int> read_from_fastq(const string &file_path, int k, unordered_map<string, triple> &vertexes,
                                unordered_map<string, int> &edges){
     string s;
-    pair<int, int> to_return;
     ifstream in(file_path);
     string p;
     int vertexes_count = 0;
     int edges_count = 0;
+    pair<int, int> tmp;
     while (getline(in, s)) {
         if (s[0]=='@') {
             getline(in,p);
             if(p[0]!='@' && p.length() > k){
-//                cout << p << endl;
-                pair<int, int> tmp = make_graph(k, p, vertexes, edges, vertexes_count, edges_count);
-                to_return.first += tmp.first;
-                to_return.second += tmp.second;}
+                tmp = make_graph(k, p, vertexes, edges, vertexes_count, edges_count);
+            }
         }
 
     }
@@ -164,7 +166,9 @@ pair<int, int> read_from_fastq(const string &file_path, int k, unordered_map<str
 //    pair<int, int> tmp = make_graph(k, s, vertexes, edges);
 //    to_return.first += tmp.first;
 //    to_return.second += tmp.second;
-    return  to_return;
+
+    cout << vertexes_count << "==" << vertexes.size() << endl;
+    return  tmp;
 }
 
 //auto comp = [](const triple& a, const triple& b) { return a.third < b.third; };
