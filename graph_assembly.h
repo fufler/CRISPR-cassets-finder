@@ -44,7 +44,6 @@ Comparator compFunctor =
         };
 
 
-
 std::pair<int, int> make_graph(const int k, const string &sequence, unordered_map<string, triple> &vertexes,
                                unordered_map<string, int> &edges, int &counter_vertexes, int &counter_edges) {
 
@@ -119,15 +118,15 @@ make_int_graph(const unordered_map<string, triple> &vertexes, const unordered_ma
 }
 
 pair<int, int> read_from_fasta(const string &file_path, int k, unordered_map<string, triple> &vertexes,
-                               unordered_map<string, int> &edges){
+                               unordered_map<string, int> &edges) {
     string s;
     ifstream in(file_path);
     string p;
     pair<int, int> to_return;
     int vertexes_count = 0;
     int edges_count = 0;
-    while (getline(in, s)){
-        if (s[0] == '>' || s[0] == '\n'){
+    while (getline(in, s)) {
+        if (s[0] == '>' || s[0] == '\n') {
             if (p.length() > k) {
                 pair<int, int> tmp = make_graph(k, p, vertexes, edges, vertexes_count, edges_count);
                 to_return.first += tmp.first;
@@ -136,17 +135,17 @@ pair<int, int> read_from_fasta(const string &file_path, int k, unordered_map<str
             }
             continue;
         }
-        p+=s;
+        p += s;
     }
     pair<int, int> tmp = make_graph(k, p, vertexes, edges, vertexes_count, edges_count);
     to_return.first += tmp.first;
     to_return.second += tmp.second;
     in.close();
-    return  to_return;
+    return to_return;
 }
 
 pair<int, int> read_from_fastq(const string &file_path, int k, unordered_map<string, triple> &vertexes,
-                               unordered_map<string, int> &edges){
+                               unordered_map<string, int> &edges) {
     string s;
     ifstream in(file_path);
     string p;
@@ -154,64 +153,92 @@ pair<int, int> read_from_fastq(const string &file_path, int k, unordered_map<str
     int edges_count = 0;
     pair<int, int> tmp;
     while (getline(in, s)) {
-        if (s[0]=='@') {
-            getline(in,p);
-            if(p[0]!='@' && p.length() > k){
+        if (s[0] == '@') {
+            getline(in, p);
+            if (p[0] != '@' && p.length() > k) {
                 tmp = make_graph(k, p, vertexes, edges, vertexes_count, edges_count);
             }
         }
 
     }
     in.close();
-//    pair<int, int> tmp = make_graph(k, s, vertexes, edges);
-//    to_return.first += tmp.first;
-//    to_return.second += tmp.second;
 
     cout << vertexes_count << "==" << vertexes.size() << endl;
-    return  tmp;
+    return tmp;
 }
 
-//auto comp = [](const triple& a, const triple& b) { return a.third < b.third; };
-//struct myCompare
-//{
-//    bool operator()(const string& a, const string& b) const {
-//        return vertexes.at(a).third < vertexes.at(b).third;
-//    }
-//};
+pair<int, int> final_graph(const vector<path> &possible_repeats, const vector<path> &possible_spacers,
+                           unordered_map<string, triple> &final_vertexes,
+                           unordered_map<string, int> &final_edges,
+                           unordered_map<string, unordered_set<string> > &connections,
+                           const vector<string> &int_vertexes) {
+    int counter_vertexes = 0;
+    int counter_edges = 0;
+    for (auto &y : possible_repeats) {
+        for (int i = 0; i < y.way.size() - 1; i++) {
+            string kmer12, kmer1, kmer2;
+            kmer1 = int_vertexes[y.way[i]];
+            kmer2 = int_vertexes[y.way[i + 1]];
+            kmer12 = int_vertexes[y.way[i]] + kmer2[kmer2.length() - 1];
 
-/*
-int **
-make_int_graph(const unordered_map<string, std::pair<int, int>> &vertexes, const unordered_map<string, int> &edges,
-               vector<string> &int_vertexes) {
-    auto int_graph = new int *[vertexes.size()];
-    int i = 0;
-    for (auto it = vertexes.begin(); it != vertexes.end(); ++it) {
-
-        int_graph[i] = new int[vertexes.size()];
-
-        int_vertexes.push_back(it->first);
-        i++;
-    }
-
-    string my_edge;
-    for (int k = 0; k < int_vertexes.size(); k++) {
-        for (int j = 0; j < int_vertexes.size(); j++) {
-            my_edge = int_vertexes[k];
-            my_edge.push_back(int_vertexes[j].back());
-            if (int_vertexes[k].compare(1, int_vertexes[k].size() - 1, int_vertexes[j], 0,
-                                        int_vertexes[j].size() - 1) == 0 &&
-                edges.count(my_edge) != 0) {
-                int_graph[k][j] = edges.at(my_edge);
+            if (final_edges.count(kmer12) > 0) {
+                ++final_edges[kmer12];
             } else {
-                int_graph[k][j] = 0;
+                ++final_edges[kmer12];
+                counter_edges += 1;
+                if (final_vertexes.count(kmer1) == 0) {
+                    final_vertexes[kmer1] = {0, 1, counter_vertexes};
+                    connections[kmer1] = {kmer2};
+                    counter_vertexes += 1;
+                } else {
+                    final_vertexes.at(kmer1).second += 1;
+                    connections.at(kmer1).insert(kmer2);
+                }
+                if (final_vertexes.count(kmer2) == 0) {
+                    final_vertexes[kmer2] = {1, 0, counter_vertexes};
+                    connections[kmer2] = {};
+                    counter_vertexes += 1;
+                } else {
+                    final_vertexes.at(kmer2).first += 1;
+                }
+            }
+        }
+    }
+    for (auto &y : possible_spacers) {
+        for (int i = 0; i < y.way.size() - 1; i++) {
+            string kmer12, kmer1, kmer2;
+            kmer1 = int_vertexes[y.way[i]];
+            kmer2 = int_vertexes[y.way[i + 1]];
+            kmer12 = int_vertexes[y.way[i]] + kmer2[kmer2.length() - 1];
+
+            if (final_edges.count(kmer12) > 0) {
+                ++final_edges[kmer12];
+            } else {
+                ++final_edges[kmer12];
+                counter_edges += 1;
+                if (final_vertexes.count(kmer1) == 0) {
+                    final_vertexes[kmer1] = {0, 1, counter_vertexes};
+                    connections[kmer1] = {kmer2};
+                    counter_vertexes += 1;
+                } else {
+                    final_vertexes.at(kmer1).second += 1;
+                    connections.at(kmer1).insert(kmer2);
+
+                }
+                if (final_vertexes.count(kmer2) == 0) {
+                    final_vertexes[kmer2] = {1, 0, counter_vertexes};
+                    connections[kmer2] = {};
+                    counter_vertexes += 1;
+                } else {
+                    final_vertexes.at(kmer2).first += 1;
+                }
             }
         }
     }
 
+    return {counter_vertexes, counter_edges};
+};
 
-    return int_graph;
-}
 
-*/
 
 #endif //CRISPR_CASSES_FINDER_GRAPH_ASSEMBLY_H

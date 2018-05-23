@@ -127,14 +127,7 @@ void *thread_body_repeats(void *arg) {
                 paths.push_back(current_path);
                 pthread_mutex_unlock(mutex);
             }
-//
-//            for (int j = 0; j < finish.size(); j++) {
-//                if (current_path.end == finish[j]) {
-//                    pthread_mutex_lock(mutex);
-//                    paths.push_back(current_path);
-//                    pthread_mutex_unlock(mutex);
-//                }
-//            }
+
             vector<pair<int, int> > order_to_add = {};
             for (int i = 0; i < offset[current_path.end + 1] - offset[current_path.end]; i++) {
                 order_to_add.push_back({weights[offset[current_path.end] + i], i});
@@ -173,24 +166,12 @@ find_possible_pairs_parallel(const vector<int> &int_edges, const vector<int> &we
                              int max_path_length) {
 
     unsigned concurentThreadsSupported = thread::hardware_concurrency();
-//    unsigned concurentThreadsSupported = 1;
     vector<pair<pthread_t, unordered_set<int> > > threads;
     int count = 0;
     vector<path> possible_pairs;
     unordered_set<int> finishes(in_vertexes.begin(), in_vertexes.end());
     unordered_set<int> starts(out_vertexes.begin(), out_vertexes.end());
-//    for (auto &start: out_vertexes)
-//    {
-//        if (starts.count(start) == 0){
-//            starts.insert(start);
-//        }
-//    }
-//    for (auto &finish: in_vertexes)
-//    {
-//        if (finishes.count(finish) == 0){
-//            finishes.insert(finish);
-//        }
-//    }
+
 
     for (auto &start: starts) {
         count++;
