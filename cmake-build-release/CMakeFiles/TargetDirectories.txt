@@ -1,3 +1,0 @@
-/Users/evgenijkegeles/CLionProjects/CRISPR-cassets-finder/cmake-build-release/CMakeFiles/rebuild_cache.dir
-/Users/evgenijkegeles/CLionProjects/CRISPR-cassets-finder/cmake-build-release/CMakeFiles/edit_cache.dir
-/Users/evgenijkegeles/CLionProjects/CRISPR-cassets-finder/cmake-build-release/CMakeFiles/CRISPR-cassets-finder.dir
