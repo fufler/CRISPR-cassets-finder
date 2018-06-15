@@ -56,6 +56,7 @@ std::pair<int, int> make_graph(const int k, const string &sequence, unordered_ma
 
 
         if (edges.count(kmer12) > 0) {
+            // Эта строка общая для обеих веток, её нужно вынести
             ++edges[kmer12];
         } else {
             ++edges[kmer12];
@@ -77,6 +78,7 @@ std::pair<int, int> make_graph(const int k, const string &sequence, unordered_ma
     return {counter_vertexes, counter_edges};
 }
 
+// Опять непонятное название
 vector<string>
 make_int_graph(const unordered_map<string, triple> &vertexes, const unordered_map<string, int> &edges,
                const std::pair<int, int> &size, vector<int> &int_edges, vector<int> &weights, vector<int> &offset) {
@@ -90,6 +92,8 @@ make_int_graph(const unordered_map<string, triple> &vertexes, const unordered_ma
         offset[i + 1] = offset[i] + it->second.second;
 
         for (int j = 0; j < it->second.second; j++) {
+            // Эти четыре if-а можно заменить на for + if
+            // for должен идти по элементам строки "atcg"
             if (edges.count(it->first + "a") > 0) {
                 int_edges[offset[i] + j] = vertexes.at(it->first.substr(1, it->first.length() - 1) + "a").third;
                 weights[offset[i] + j] = edges.at(it->first + "a");
@@ -118,7 +122,7 @@ make_int_graph(const unordered_map<string, triple> &vertexes, const unordered_ma
 }
 
 pair<int, int> read_from_fasta(const string &file_path, int k, unordered_map<string, triple> &vertexes,
-                               unordered_map<string, int> &edges) {
+                               unordered_map<string, int> &edges) { // → read_fasta
     string s;
     ifstream in(file_path);
     string p;
@@ -145,7 +149,7 @@ pair<int, int> read_from_fasta(const string &file_path, int k, unordered_map<str
 }
 
 pair<int, int> read_from_fastq(const string &file_path, int k, unordered_map<string, triple> &vertexes,
-                               unordered_map<string, int> &edges) {
+                               unordered_map<string, int> &edges) { // → read_fastq
     string s;
     ifstream in(file_path);
     string p;
@@ -167,6 +171,7 @@ pair<int, int> read_from_fastq(const string &file_path, int k, unordered_map<str
     return tmp;
 }
 
+// Непонятное название
 pair<int, int> final_graph(const vector<path> &possible_repeats, const vector<path> &possible_spacers,
                            unordered_map<string, triple> &final_vertexes,
                            unordered_map<string, int> &final_edges,
@@ -181,11 +186,13 @@ pair<int, int> final_graph(const vector<path> &possible_repeats, const vector<pa
             kmer2 = int_vertexes[y.way[i + 1]];
             kmer12 = int_vertexes[y.way[i]] + kmer2[kmer2.length() - 1];
 
+            // Опять общая стока в обеих ветках
             if (final_edges.count(kmer12) > 0) {
                 ++final_edges[kmer12];
             } else {
                 ++final_edges[kmer12];
                 counter_edges += 1;
+                // Два одинаковых if-а, но с разными перенными — можно упростить
                 if (final_vertexes.count(kmer1) == 0) {
                     final_vertexes[kmer1] = {0, 1, counter_vertexes};
                     connections[kmer1] = {kmer2};
@@ -211,6 +218,7 @@ pair<int, int> final_graph(const vector<path> &possible_repeats, const vector<pa
             kmer2 = int_vertexes[y.way[i + 1]];
             kmer12 = int_vertexes[y.way[i]] + kmer2[kmer2.length() - 1];
 
+            // Аналогично
             if (final_edges.count(kmer12) > 0) {
                 ++final_edges[kmer12];
             } else {

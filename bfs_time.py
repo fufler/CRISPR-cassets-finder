@@ -3,6 +3,8 @@ def bfs(graph, start, used):
     used.add(start)
     queue = []
     queue.append((start, 0))
+    # Заменить на queue = [(start, 0)]
+    # И вообще использовать класс очереди или связный список
     while queue:
         vertex, time = queue.pop(0)
         time += 1

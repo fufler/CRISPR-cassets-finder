@@ -2,6 +2,8 @@
 // Created by Евгений Кегелес on 30.04.2018.
 //
 
+// Обычно хэдэры для cpp имеют расширение hpp
+
 #ifndef CRISPR_CASSES_FINDER_GRAPH_ANALYSIS_H
 #define CRISPR_CASSES_FINDER_GRAPH_ANALYSIS_H
 
@@ -10,18 +12,23 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+// sort_by_first_desc
 bool sortbyfirstdesc(const pair<int, int> &a,
                      const pair<int, int> &b) {
     return a.first > b.first;
 }
 
 
-
-vector<int> find_max_out_vertexes(const unordered_map<string, triple> &vertexes, int max_out_treshold) {
+// vertexes → vertices
+vector<int> find_max_out_vertexes(const unordered_map<string, triple> &vertexes, int max_out_treshold) { // threshold
+    // Если заранее известно, сколько примерно будет вершин, то можно сразу сделать reserve
     vector<int> max_out_vertexes;
 
+    // Можно заменить на for (const auto& entry: vertexes)
     for (auto it = vertexes.begin(); it != vertexes.end(); ++it) {
         if (it->second.second - it->second.first >= max_out_treshold) {
+            // Почему vertexes.at, а не vertexes[]?
+            // [] быстрее
             max_out_vertexes.push_back(vertexes.at(it->first).third);
         }
     }
@@ -30,6 +37,8 @@ vector<int> find_max_out_vertexes(const unordered_map<string, triple> &vertexes,
     return max_out_vertexes;
 }
 
+// См. замечания к пребыбущей функции
+// При желании можно убрать копипасту, введя дополнительную функцию
 vector<int> find_max_in_vertexes(const unordered_map<string, triple> &vertexes, int max_in_treshold) {
     vector<int> max_in_vertexes;
 
@@ -44,7 +53,9 @@ vector<int> find_max_in_vertexes(const unordered_map<string, triple> &vertexes, 
 
 vector<path> find_possible_path_bfs(const vector<int> &int_edges, const vector<int> &weights, const vector<int> &offset,
                                     int start, vector<int> finish, int max_path_length, vector<path> &paths) {
+//                                                        ^----- const vector<int>& ?
 
+    // Названия переменных не принято начинать с большой буквы
     deque<path> Q;
 //    unordered_set<int> used;
     path current_path = {start, start, 0, 0, {start}};
@@ -55,6 +66,7 @@ vector<path> find_possible_path_bfs(const vector<int> &int_edges, const vector<i
         current_path = Q.front();
         Q.pop_front();
 
+        // Можно заменяить на range-for
         for (int j = 0; j < finish.size(); j++) {
             if (current_path.end == finish[j]) {
                 paths.push_back(current_path);
@@ -66,6 +78,8 @@ vector<path> find_possible_path_bfs(const vector<int> &int_edges, const vector<i
         }
         sort(order_to_add.begin(), order_to_add.end(), sortbyfirstdesc);
         for (auto &i : order_to_add)
+//           ^---- const auto& i
+// Но лучше не i, а что-то другое, потому что под i,j,k обычно понимается индекс
             if (current_path.length < max_path_length) {
                 if (find(current_path.way.begin(), current_path.way.end(),
                          int_edges[offset[current_path.end] + i.second]) == current_path.way.end()) {
@@ -84,11 +98,35 @@ vector<path> find_possible_path_bfs(const vector<int> &int_edges, const vector<i
                 return paths;
             }
 
+/*
+ *  Весь этот if лучше переписать иначе. Если получается конструкция вида
+ *
+ *  if (cond) {
+ *      …
+ *  } else {
+ *      return …
+ *  }
+ *
+ *  ,то лучше её переписать вот так
+ *
+ *  if (!cond)
+ *      return …
+ *
+ *  …
+ *
+ *  Такое код проще читать и воспринимать.
+ *
+ *
+ * */
+
     }
 
     return paths;
 }
 
+// Для плюсов typedef не нужен, можно просто использовать struct
+// С референсами в структурах нужно быть аккураткее, чтобы случайно не острелить себе ногу
+// Возможно, лучше (==безопаснее) было бы использовать указатель
 typedef struct {
     const vector<int> &int_edges;
     const vector<int> &weights;
@@ -100,7 +138,10 @@ typedef struct {
     pthread_mutex_t *mtx;
 } thread_arg_repeats;
 
+// Название функции не даёт вообще никакого представления о том, что она делает
+// Понятно только одно — это будет выполняться в отдельном потоке
 void *thread_body_repeats(void *arg) {
+    // auto argument = …
     thread_arg_repeats *argument = (thread_arg_repeats *) arg;
 
     const vector<int> &int_edges = argument->int_edges;
@@ -113,11 +154,11 @@ void *thread_body_repeats(void *arg) {
     pthread_mutex_t *mutex = argument->mtx;
 
     for (auto &start : starts) {
-
-        deque<path> Q;
+//       ^--- const auto&
+        deque<path> Q; // q
         path current_path = {start, start, 0, 0, {start}, {start}};
         Q.push_back(current_path);
-        bool to_break = false;
+        bool to_break = false; // flag
         while (!Q.empty()) {
             current_path = Q.front();
             Q.pop_front();
@@ -135,6 +176,7 @@ void *thread_body_repeats(void *arg) {
             sort(order_to_add.begin(), order_to_add.end(), sortbyfirstdesc);
 
             for (auto &i : order_to_add) {
+                // Снова та же история с if-ом
                 if (current_path.length < max_path_length) {
                     if (current_path.visited.count(int_edges[offset[current_path.end] + i.second]) == 0) {
 
@@ -148,6 +190,7 @@ void *thread_body_repeats(void *arg) {
                                      current_path.weight + weights[offset[current_path.end] + i.second], to_add, adding});
                     }
                 } else {
+                    // Есть ощущение,что тут можно сразу написать return nullptr
                     to_break = true;
                     break;
                 }
@@ -165,7 +208,7 @@ find_possible_pairs_parallel(const vector<int> &int_edges, const vector<int> &we
                              const vector<int> &out_vertexes, const vector<int> &in_vertexes,
                              int max_path_length) {
 
-    unsigned concurentThreadsSupported = thread::hardware_concurrency();
+    unsigned concurentThreadsSupported = thread::hardware_concurrency(); // concurrent
     vector<pair<pthread_t, unordered_set<int> > > threads;
     int count = 0;
     vector<path> possible_pairs;
@@ -202,6 +245,8 @@ find_possible_pairs_parallel(const vector<int> &int_edges, const vector<int> &we
     return possible_pairs;
 }
 
+// Мне кажется, что possible не самое удачное слово тут
+// Наверное, лучше было назвать find_pairs_candidates / find_spacers_candidates
 vector<path> find_possible_pairs(const vector<int> &int_edges, const vector<int> &weights, const vector<int> &offset,
                                  const vector<int> &out_vertexes, const vector<int> &in_vertexes,
                                  int max_path_length) {
@@ -223,7 +268,7 @@ vector<path> find_possible_spacers(const vector<int> &int_edges, const vector<in
         finishes.insert(x.start);
     }
     vector<path> possible_pairs;
-    vector<int> aims;
+    vector<int> aims; // targets? destinations?
     for (auto &y : finishes) {
         aims.push_back(y);
     }
@@ -234,6 +279,7 @@ vector<path> find_possible_spacers(const vector<int> &int_edges, const vector<in
 
 }
 
+// Есть ощущение, что тут почти что копипаста с аналогичной функции find_possible_pairs_parallel
 vector<path> find_possible_spacers_parallel(const vector<int> &int_edges, const vector<int> &weights, const vector<int> &offset,
                                    const vector<path> &possible_ways, int max_path_length) {
 

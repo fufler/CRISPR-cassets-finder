@@ -22,8 +22,11 @@ using namespace std;
 void
 graph_visualise_debug(const unordered_map<string, triple> &vertexes, const unordered_map<string, int> &edges) {
     int k = vertexes.begin()->first.length();
+    // facepalm.jpg
+    // Захардкоженный путь — это плохо
+    // Захардкоженный абсолютный путь — плохо в квадрате
     int fd = open("/Users/evgenijkegeles/CLionProjects/CRISPR-cassets-finder/sequence_1",
-                  O_WRONLY | O_CREAT | O_TRUNC, 0644);
+                  O_WRONLY | O_CREAT | O_TRUNC, 0644); // Почему через open, а не через fstream?
     int BUF_SIZE = 1000;
     char buf[BUF_SIZE];
     sprintf(buf, "digraph {\n node [shape=box]\n");
@@ -52,6 +55,7 @@ graph_visualise(const unordered_map<string, triple> &vertexes, const unordered_m
                   O_WRONLY | O_CREAT | O_TRUNC, 0644);
     int BUF_SIZE = 1000;
     char buf[BUF_SIZE];
+    // Проще было бы через iostream
     sprintf(buf, "digraph {\n node [shape=box]\n");
     write(fd, buf, strlen(buf));
 
@@ -71,6 +75,7 @@ graph_visualise(const unordered_map<string, triple> &vertexes, const unordered_m
     close(fd);
 }
 
+// Непонятное название
 string get_string_path(const path &condensing_path, const vector<string> &int_vertexes) {
 
     string way = int_vertexes[condensing_path.way[0]];
@@ -81,6 +86,7 @@ string get_string_path(const path &condensing_path, const vector<string> &int_ve
     return way;
 }
 
+// Замечания те же, что и к предыдущей функции
 void
 make_output(const vector<int> &max_in_vertexes, const vector<int> &max_out_vertexes,
             const vector<path> &possible_paths, const vector<path> &possible_spacers,
@@ -147,6 +153,7 @@ make_output(const vector<int> &max_in_vertexes, const vector<int> &max_out_verte
     close(fd);
 }
 
+// И здесь
 void final_visualise(const unordered_map<string, triple> &final_vertexes, const unordered_map<string, int> &final_edges,
                      unordered_map<string, unordered_set<string> > &connections, int k) {
     int fd = open("/Users/evgenijkegeles/CLionProjects/CRISPR-cassets-finder/graph_ASQG_visualise.asqg",

@@ -25,6 +25,7 @@ bool cmdOptionExists(char **begin, char **end, const std::string &option) {
 
 int main(int argc, char *argv[]) {
 
+    // boost::program_options умеют всё это
     if (cmdOptionExists(argv, argv + argc, "-h")) {
         cout << "Parametres:" << endl;
         cout << "-h" << " " << "[ ]" << "-- help" << endl;
@@ -89,6 +90,9 @@ int main(int argc, char *argv[]) {
         cout << "No threshold !" << endl;
         return 0;
     }
+
+    // --------------------------------
+    // Вот примерно до этого места нужно всё выкидывать и заменять на boost
 
 //    int k = 20;
 //
